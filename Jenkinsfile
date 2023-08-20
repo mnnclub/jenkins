@@ -4,7 +4,7 @@ pipeline {
 
     // 젠킨스 빌드 트리거의 poll scm 옵션켜야 되고 그안에 스케쥴 설정은 해도 안먹어서 여기다 해둬야 함 - 라고 2년전에 얘기했었음
     triggers {
- //       pollSCM('H/30 * * * *')
+        pollSCM('H/30 * * * *')
     }
 
     environment {
