@@ -80,7 +80,7 @@ pipeline {
         }
         
         stage('Lint Backend') {
-            echo "#####[3/6] Linting Backend #####"
+            
             // Docker plugin and Docker Pipeline 두개를 깔아야 사용가능!
             agent {
               docker {
@@ -89,6 +89,7 @@ pipeline {
             }
             
             steps {
+              echo '#####[3/6] Linting Backend #####'
               dir ('./server'){
                   sh '''
                   npm install&&
