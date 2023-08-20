@@ -20,7 +20,7 @@ pipeline {
             agent any
             
             steps {
-                echo 'Clonning Repository'
+                echo '#####[1/6] Clonning Repository #####'
 
                 // git credentialsId: 'token for Jenkins', url: 'https://github.com/mnnclub/jenkins'
                 git url: 'https://github.com/mnnclub/jenkins',
@@ -32,7 +32,7 @@ pipeline {
                 // If Maven was able to run the tests, even if some of the test
                 // failed, record the test results and archive the jar file.
                 success {
-                    echo 'Successfully Cloned Repository'
+                    echo '##### Successfully Cloned Repository #####'
                 }
 
                 always {
@@ -40,7 +40,7 @@ pipeline {
                 }
 
                 cleanup {
-                  echo "after all other post condition"
+                  echo "##### after all other post condition #####"
                 }
             }
         }
@@ -48,7 +48,7 @@ pipeline {
         // aws s3 에 파일을 올림
         stage('Deploy Frontend') {
           steps {
-            echo 'Deploying Frontend'
+            echo '#####[2/6] Deploying Frontend #####'
             // 프론트엔드 디렉토리의 정적파일들을 S3 에 올림, 이 전에 반드시 EC2 instance profile 을 등록해야함.
             dir ('./website'){
                 sh '''
@@ -61,7 +61,7 @@ pipeline {
               // If Maven was able to run the tests, even if some of the test
               // failed, record the test results and archive the jar file.
               success {
-                  echo 'Successfully Cloned Repository'
+                  echo '##### Successfully Cloned Repository #####'
 
                   mail  to: 'mnnclub3@gmail.com',
                         subject: "Deploy Frontend Success",
@@ -70,7 +70,7 @@ pipeline {
               }
 
               failure {
-                  echo 'I failed :('
+                  echo '##### I failed :( #####'
 
                   mail  to: 'mnnclub3@gmail.com',
                         subject: "Failed Pipelinee",
@@ -80,6 +80,7 @@ pipeline {
         }
         
         stage('Lint Backend') {
+            echo "#####[3/6] Linting Backend #####"
             // Docker plugin and Docker Pipeline 두개를 깔아야 사용가능!
             agent {
               docker {
@@ -104,7 +105,7 @@ pipeline {
             }
           }
           steps {
-            echo 'Test Backend'
+            echo '#####[4/6] Test Backend #####'
 
             dir ('./server'){
                 sh '''
@@ -118,7 +119,7 @@ pipeline {
         stage('Bulid Backend') {
           agent any
           steps {
-            echo 'Build Backend'
+            echo '#####[5/6] Build Backend #####'
 
 
             // docker build . -t server --build-arg env=${PROD}
@@ -140,13 +141,12 @@ pipeline {
           agent any
 
           steps {
-            echo 'Build Backend'
+            echo '#####[6/6] Build Backend #####'
 
             // 최초실행때는 실행중인 도커가 없어서 제거하되 2번째 이후부터는 필요함: docker rm -f $(docker ps -aq)
             // 위에 빌드백엔드 스테이지에서 도커 빌드 server 로 해줬으니까 그이름 그대로 아래에.
             dir ('./server'){
                 sh '''
-                docker rm -f $(docker ps -aq)
                 docker run -p 80:80 -d server
                 '''
             }
