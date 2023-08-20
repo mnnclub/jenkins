@@ -2,8 +2,9 @@ pipeline {
     // 스테이지 별로 다른 거
     agent any
 
+    // 젠킨스 빌드 트리거의 poll scm 옵션켜야 되고 그안에 스케쥴 설정은 해도 안먹어서 여기다 해둬야 함 
     triggers {
-        pollSCM('*/3 * * * *')
+        pollSCM('H/3 * * * *')
     }
 
     environment {
@@ -21,9 +22,10 @@ pipeline {
             steps {
                 echo 'Clonning Repository'
 
-                git url: 'https://github.com/frontalnh/temp.git',
+                // git credentialsId: 'token for Jenkins', url: 'https://github.com/mnnclub/jenkins'
+                git url: 'https://github.com/mnnclub/jenkins',
                     branch: 'master',
-                    credentialsId: 'jenkinsgit'
+                    credentialsId: 'token for Jenkins'
             }
 
             post {
@@ -50,7 +52,7 @@ pipeline {
             // 프론트엔드 디렉토리의 정적파일들을 S3 에 올림, 이 전에 반드시 EC2 instance profile 을 등록해야함.
             dir ('./website'){
                 sh '''
-                aws s3 sync ./ s3://namhoontest
+                aws s3 sync ./ s3://jihyeonho
                 '''
             }
           }
@@ -61,7 +63,7 @@ pipeline {
               success {
                   echo 'Successfully Cloned Repository'
 
-                  mail  to: 'frontalnh@gmail.com',
+                  mail  to: 'mnnclub3@gmail.com',
                         subject: "Deploy Frontend Success",
                         body: "Successfully deployed frontend!"
 
@@ -70,7 +72,7 @@ pipeline {
               failure {
                   echo 'I failed :('
 
-                  mail  to: 'frontalnh@gmail.com',
+                  mail  to: 'mnnclub3@gmail.com',
                         subject: "Failed Pipelinee",
                         body: "Something is wrong with deploy frontend"
               }
@@ -138,6 +140,8 @@ pipeline {
           steps {
             echo 'Build Backend'
 
+            // 최초실행때는 실행중인 도커가 없어서 제거하되 2번째 이후부터는 필요함: docker rm -f $(docker ps -aq)
+            // 위에 빌드백엔드 스테이지에서 도커 빌드 server 로 해줬으니까 그이름 그대로 아래에.
             dir ('./server'){
                 sh '''
                 docker rm -f $(docker ps -aq)
@@ -148,7 +152,7 @@ pipeline {
 
           post {
             success {
-              mail  to: 'frontalnh@gmail.com',
+              mail  to: 'mnnclub3@gmail.com',
                     subject: "Deploy Success",
                     body: "Successfully deployed!"
                   
