@@ -120,9 +120,11 @@ pipeline {
           steps {
             echo 'Build Backend'
 
+
+            // docker build . -t server --build-arg env=${PROD}
             dir ('./server'){
                 sh """
-                docker build . -t server --build-arg env=${PROD}
+                docker build . -t server
                 """
             }
           }
